@@ -5,9 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npx hardhat test",
-    "compile": "npx hardhat compile",
-    "deploy": "npx hardhat deploy",
-    "coverage": "npx hardhat coverage --network hardhat"
+    "compile": "npx hardhat compile"
   },
   "keywords": [],
   "author": "Salman Dabbakuti",
