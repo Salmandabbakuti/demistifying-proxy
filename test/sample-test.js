@@ -5,6 +5,7 @@
 */
 
 const { assert } = require("chai");
+const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 
 async function lookupStorageAt(address, slot) {
   const value = await ethers.provider.getStorageAt(address, slot);
@@ -12,32 +13,26 @@ async function lookupStorageAt(address, slot) {
 };
 
 describe("Contract Tests", function () {
-  let proxy;
-  let logic1;
-  let logic2;
-  let proxyAsLogic1;
-  let proxyAsLogic2;
-
-  // `before` will run only once, useful for deploying the contract and use it on every test
-  // It receives a callback, which can be async.
-  before(async () => {
+  async function deployFixture() {
     // Get the ContractFactory and Signers here.
     const proxyFactory = await ethers.getContractFactory("Proxy");
     const logic1Factory = await ethers.getContractFactory("Logic1");
     const logic2Factory = await ethers.getContractFactory("Logic2");
 
     // Deploy the contract specifying the constructor arguments
-    proxy = await proxyFactory.deploy();
+    const proxy = await proxyFactory.deploy();
     await proxy.deployed();
-    logic1 = await logic1Factory.deploy();
+    const logic1 = await logic1Factory.deploy();
     await logic1.deployed();
-    logic2 = await logic2Factory.deploy();
+    const logic2 = await logic2Factory.deploy();
     await logic2.deployed();
-    proxyAsLogic1 = logic1Factory.attach(proxy.address); // Attach the proxy address to the logic1 contract to trick the abi to call logic functions
-    proxyAsLogic2 = logic2Factory.attach(proxy.address);
-  });
+    const proxyAsLogic1 = logic1Factory.attach(proxy.address); // Attach the proxy address to the logic1 contract to trick the abi to call logic functions
+    const proxyAsLogic2 = logic2Factory.attach(proxy.address);
+    return { proxy, logic1, logic2, proxyAsLogic1, proxyAsLogic2 };
+  };
 
   it("Should work with upgrades", async function () {
+    const { proxy, logic1, logic2, proxyAsLogic1, proxyAsLogic2 } = await loadFixture(deployFixture);
 
     //  Test the contract V1
     await proxy.changeImplementation(logic1.address);
